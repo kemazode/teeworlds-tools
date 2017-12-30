@@ -13,7 +13,8 @@ en_monitoring ()
             grep -m1 -A1 "^\[[[:xdigit:]]\{8\}\]\[server\]: player has entered the game" | \
 	    sed -e \
 		's/^\[[[:xdigit:]]\{8\}\]\[server\]: player has entered the game. ClientID=.* addr=\(.*\).*/Enter:\naddr=\1/' -e \
-		"s/^\[[[:xdigit:]]\{8\}\]\[chat\]: \*\*\* '\(.*\)' entered and joined.*/name=\1\ndate=/" | awk '{ if ($1 == "date=") print "date="strftime("%d-%m-%Y %H:%M:%S %Z")"\n"; else print $0 }' >> "$BD"
+		"s/^\[[[:xdigit:]]\{8\}\]\[chat\]: \*\*\* '\(.*\)' entered and joined.*/name=\1\ndate=/" | \
+	    awk '{ if ($1 == "date=") print "date="strftime("%d-%m-%Y %H:%M:%S %Z")"\n"; else print $0 }' >> "$BD"
     done
 }
 
@@ -29,7 +30,8 @@ lv_monitoring ()
 	   grep -m1 -A1 "^\[[[:xdigit:]]\{8\}\]\[game\]: leave player" | \
 	   sed -e \
 	       "s/^\[[[:xdigit:]]\{8\}\]\[game\]: leave player='[0-9]*:\(.*\)'/Leave:\nname=\1\ndate=/" -e \
-	       "/^\[[[:xdigit:]]\{8\}\]\[game\]: Teams are/d" | awk '{ if ($1 == "date=") print "date="strftime("%d-%m-%Y %H:%M:%S %Z")"\n"; else print $0 }' >> "$BD"
+	       "/^\[[[:xdigit:]]\{8\}\]\[game\]: Teams are/d" | \
+	   awk '{ if ($1 == "date=") print "date="strftime("%d-%m-%Y %H:%M:%S %Z")"\n"; else print $0 }' >> "$BD"
    done
 }
 botsmon ()
