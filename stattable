@@ -1,0 +1,86 @@
+#!/usr/bin/gawk -f
+# This script analyzes logs and compiles a table of players
+# Was written by yachmenka
+function sortnames(nms,    _r, _b, _s, _i, _newnms) # Sort all names for drawing a table
+{
+    _r = 0 
+    _b = 1 
+    _s = 2 
+    for (_i in nms)
+	if (nms[_i] == 0)
+	{
+	    _newnms[_r] = _i
+	    _r += 3
+	}
+	else if (nms[_i] == 1)
+	{
+	    _newnms[_b] = _i
+	    _b += 3
+	}
+	else if (nms[_i] == 2)
+	{
+	    _newnms[_s] = _i
+	    _s += 3
+	}
+    delete nms
+    for (_i in _newnms)
+	nms[_i] = _newnms[_i]
+}
+/^\[[[:xdigit:]]{8}\]\[chat\]: \*\*\* \x27.*\x27 entered and joined/ {
+    oldmode = mode
+    if ($0 ~ /joined the blue|joined the red/)
+	mode = 0
+    else if ($0 ~ /\x27 (entered and )?joined the game/)
+	mode = 1
+    if (oldmode != mode)
+	delete names
+}
+# Look for joined players
+/^\[[[:xdigit:]]{8}\]\[chat\]: \*\*\* \x27.*\x27 (entered and )?joined the (spectators|game|blue team|red team)/ {
+    name = substr($0, index($0,"\x27") + 1, match($0, "\x27 (entered and )?joined the (spectators|game|blue team|red team)") - index ($0, "\x27") - 1)
+    if ($0 ~ /joined the red team/)
+	names[name] = 0
+    else if ($0 ~ /joined the blue team/)
+	names[name] = 1
+    else if ($0 ~ /joined the spectators/)
+	names[name] = 2
+    else if ($0 ~ /\x27 (entered and )?joined the game/)
+	names[name] = 0
+}
+# Look for players who has changed his name
+/^\[[[:xdigit:]]{8}\]\[chat\]: \*\*\* \x27.*\x27 changed name/ {
+    tempind = index($0, "\x27 changed name to")
+    oldname = substr($0, index($0, "\x27") + 1, tempind - index($0, "\x27") - 1)
+    names[substr($0, tempind + 19, length($0) - tempind - 19)] = names[oldname]
+    delete names[oldname]
+}
+# Look for players who has left the game
+/^\[[[:xdigit:]]{8}\]\[chat\]: \*\*\* \x27.*\x27 has left the game/ {
+    name = substr($0, index($0, "\x27") + 1, index($0, "\x27 has left the game") - index ($0, "\x27") - 1)
+    delete names[name]
+}
+END {
+    if (length(names) > 0)
+    {
+	sortnames(names) # Sort for drawing
+	oldi = 2         # Draw a table...
+	print "==========================================================================================="
+	printf "|%20s %29s %29s", "RED TEAM:", "BLUE TEAM:", "SPECTATORS:"
+	for (i in names)
+	{
+	    if (i % 3 - oldi % 3 != 1 )
+	    {
+		printf "%"70-30*(oldi% 3)"s", "|"
+		print ""
+		printf "%s", "|"
+	    }
+	    if (i % 3 == 0) printf "%20s", names[i]
+	    if (i % 3 == 1) printf "%"50-20*(oldi% 3 == 0)"s", names[i]
+	    if (i % 3 == 2) printf "%"80*(oldi% 3 == 2) + 60*(oldi% 3 == 0) + 30*(oldi% 3 == 1)"s", names[i]
+	    oldi = i
+	}
+	printf "%"70-30*(oldi% 3)"s", "|"
+	print "\n==========================================================================================="
+   }
+    else print "No one :("
+}

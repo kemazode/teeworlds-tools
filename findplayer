@@ -1,0 +1,11 @@
+#!/bin/bash
+BD="${HOME}/.teeworlds/players"
+while getopts "n:x:t:" opt
+do
+	case "$opt" in
+	x) grep -A2 "addr=$OPTARG" "$BD" ;;
+	n) grep -C1 "name=$OPTARG" "$BD" | sed 's/addr=.*/Enter:\n&/' ;;
+	t) grep -B2 "date=.*$OPTARG" "$BD" | sed 's/addr=.*/Enter:\n&/' ;; 
+	esac
+done
+ 
