@@ -1,0 +1,48 @@
+#!/bin/bash
+clear ()
+{
+    echo "Bot stopped"
+    pkill -P $$
+}
+trap "clear" 0
+trap "exit 0" 1 2 3 13 15
+settfile="$HOME/.teeworlds/settings.cfg"
+while getopts ":n:s:a:" opt
+do
+	if [ "$opt" = n ]; then name="$OPTARG"
+	elif [ "$opt" = s ]; then settfile="$OPTARG"
+	elif [ "$opt" = a ]; then ipserv="$OPTARG"
+	else
+	    echo -e "Incorrect option.\n -n set name of bot\n -s set configuration file\n -a set ip"
+	    exit 128
+	fi
+done
+TERMID=$(xdotool getwindowfocus)
+teeworlds "connect $ipserv" "exec $settfile" "player_name \"$name\"" &
+while [ "$TERMID" = "$(xdotool getwindowfocus)" ]
+      do
+	  sleep 0.1
+      done
+TEEID=$(xdotool getwindowfocus)
+xdotool set_window --name "Tee Bot" $TEEID
+xdotool windowactivate $TERMID
+while :
+do
+    ACTION=$(shuf -i 1-4 -n 1)
+    case $ACTION in
+	1) xdotool key --window $TEEID "q" ;;
+	2) xdotool keyup --window $TEEID "d" && 
+		 xdotool keyup --window $TEEID "a" &&
+	xdotool keydown --window $TEEID "d" ;;
+	3) xdotool keyup --window $TEEID "d" && 
+		 xdotool keyup --window $TEEID "a" && 
+		 xdotool keydown --window $TEEID "a" ;;
+	4) xdotool key --window $TEEID "space" ;;
+    esac
+    if [ $? -eq 1 ]; then break; fi
+    if [ $(shuf -i 1-5 -n 1) -eq 5 ]; then
+	xdotool key --window $TEEID "o"; fi 
+    if [ $? -eq 1 ]; then break; fi
+    sleep 0.1
+done
+exit 0
