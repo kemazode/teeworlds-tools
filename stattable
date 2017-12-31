@@ -1,4 +1,4 @@
-#!/usr/bin/gawk -f
+#!/usr/bin/awk -f
 # This script analyzes logs and compiles a table of players
 # Was written by yachmenka
 function sortnames(nms,    _r, _b, _s, _i, _newnms) # Sorting names for drawing a table
