@@ -1,4 +1,4 @@
-# teeworlds-tools
+# teeworlds-tools (deprecated)
 Players board
 -----------------
 It is assumed that you have an awk interpreter
